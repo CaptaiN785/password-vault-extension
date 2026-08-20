@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Fixture 5 — three forms on one page</title>
+  <style>
+    body { font: 14px/1.5 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+           margin: 0; padding: 32px; background: #f8fafc; color: #0f172a; }
+    a { color: #2563eb; }
+    .back { display: inline-block; margin-bottom: 20px; font-size: 13px; }
+    h1 { font-size: 19px; margin: 0 0 6px; }
+    .note { color: #64748b; max-width: 62ch; margin: 0 0 22px; }
+    fieldset { border: 1px solid #e2e8f0; border-radius: 10px; background: #fff;
+               padding: 16px 18px; max-width: 380px; }
+    legend { font-weight: 600; padding: 0 6px; }
+    label { display: block; font-size: 12px; color: #64748b; margin: 10px 0 3px; }
+    input { width: 100%; padding: 8px 10px; border: 1px solid #cbd5e1; border-radius: 6px;
+            font: inherit; box-sizing: border-box; }
+    button { margin-top: 14px; padding: 8px 14px; border-radius: 6px; border: 1px solid #2563eb;
+             background: #2563eb; color: #fff; font: inherit; cursor: pointer; }
+    .state { margin-top: 12px; font: 12px/1.5 ui-monospace, Menlo, monospace;
+             background: #f1f5f9; border-radius: 6px; padding: 8px 10px; white-space: pre-wrap; }
+    code { background: #e2e8f0; padding: 1px 5px; border-radius: 4px; }
+    .proves { border-left: 3px solid #2563eb; padding: 2px 0 2px 12px; margin: 0 0 22px;
+              color: #475569; max-width: 62ch; }
+</style>
+</head>
+<body>
+<a class="back" href="login.html">&larr; All fixtures</a>
+<h1>Fixture 5 — three forms on one page</h1>
+<p class="proves">Detection scopes to the form your caret is in. Click a field in one form, press the fill shortcut, and <strong>only that form</strong> should fill. Same for saving: type into form B and the save prompt must offer form B&rsquo;s values, not form A&rsquo;s.</p>
+<div style="display:flex;gap:16px;flex-wrap:wrap">
+  <fieldset>
+    <legend>Form A</legend>
+    <form>
+      <label for="a-u">Email</label>
+      <input id="a-u" name="email" type="email" autocomplete="username">
+      <label for="a-p">Password</label>
+      <input id="a-p" name="password" type="password" autocomplete="current-password">
+      <button type="submit">Sign in</button>
+    </form>
+    <div class="state" data-for="a">empty</div>
+  </fieldset>
+
+  <fieldset>
+    <legend>Form B</legend>
+    <form>
+      <label for="b-u">Username</label>
+      <input id="b-u" name="username" type="text" autocomplete="username">
+      <label for="b-p">Password</label>
+      <input id="b-p" name="password" type="password">
+      <button type="submit">Log in</button>
+    </form>
+    <div class="state" data-for="b">empty</div>
+  </fieldset>
+
+  <fieldset>
+    <legend>Form C</legend>
+    <form>
+      <label for="c-u">Account</label>
+      <input id="c-u" name="account" type="text" autocomplete="username">
+      <label for="c-p">Password</label>
+      <input id="c-p" name="password" type="password">
+      <button type="submit">Continue</button>
+    </form>
+    <div class="state" data-for="c">empty</div>
+  </fieldset>
+</div>
+<script>
+  for (const prefix of ['a', 'b', 'c']) {
+    const u = document.getElementById(prefix + '-u');
+    const p = document.getElementById(prefix + '-p');
+    const state = document.querySelector(`.state[data-for="${prefix}"]`);
+    const render = () => {
+      state.textContent = `username: ${u.value || '(empty)'}\npassword: ${'\u2022'.repeat(p.value.length) || '(empty)'}`;
+    };
+    u.addEventListener('input', render);
+    p.addEventListener('input', render);
+    render();
+  }
+  document.addEventListener('submit', (e) => e.preventDefault(), true);
+</script>
+</body>
+</html>

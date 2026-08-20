@@ -1,0 +1,12 @@
+{
+  "name": "password-vault",
+  "version": "2.0.0",
+  "private": true,
+  "description": "Chrome extension: a local, encrypted password vault with shortcut autofill and Touch ID unlock.",
+  "type": "module",
+  "scripts": {
+    "test": "node test/vault.test.mjs ./src",
+    "check": "node --check src/background.js && node --check src/vault.js && node --check src/crypto.js && node --check src/domain.js && node --check src/biometric.js && node --check src/messages.js && node --check src/offscreen.js && node --check src/content/content.js && node --check src/popup/popup.js && node --check src/options/options.js",
+    "fixtures": "python3 -m http.server 8000 --directory test"
+  }
+}

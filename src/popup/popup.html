@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Password Vault</title>
+  <link rel="stylesheet" href="popup.css">
+</head>
+<body>
+
+<!-- ── First run ─────────────────────────────────────────────────────────── -->
+<section id="view-setup" class="view" hidden>
+  <h1>Create your vault</h1>
+  <p class="lede">Everything is encrypted with this password and stored only on this computer.</p>
+  <form id="form-setup" novalidate>
+    <label for="setup-pw">Master password</label>
+    <input id="setup-pw" type="password" autocomplete="new-password" minlength="8" required
+           aria-describedby="setup-strength">
+    <div id="setup-strength" class="strength" aria-live="polite"></div>
+
+    <label for="setup-pw2">Confirm password</label>
+    <input id="setup-pw2" type="password" autocomplete="new-password" minlength="8" required>
+
+    <p class="warn">If you forget this password, the vault cannot be recovered.</p>
+    <button type="submit" class="primary wide">Create vault</button>
+    <p id="setup-error" class="error" role="alert" hidden></p>
+  </form>
+</section>
+
+<!-- ── Locked ────────────────────────────────────────────────────────────── -->
+<section id="view-locked" class="view" hidden>
+  <h1>Vault locked</h1>
+
+  <div id="bio-block" hidden>
+    <button id="btn-bio" class="primary wide">Unlock with Touch ID</button>
+    <p id="bio-status" class="lede center" role="status" aria-live="polite"></p>
+    <div class="or"><span>or</span></div>
+  </div>
+
+  <form id="form-unlock" novalidate>
+    <label for="unlock-pw">Master password</label>
+    <input id="unlock-pw" type="password" autocomplete="current-password" required>
+    <button type="submit" class="primary wide">Unlock</button>
+    <p id="unlock-error" class="error" role="alert" hidden></p>
+  </form>
+</section>
+
+<!-- ── Unlocked ──────────────────────────────────────────────────────────── -->
+<section id="view-list" class="view" hidden>
+  <header class="bar">
+    <input id="search" type="search" placeholder="Search logins" autocomplete="off"
+           aria-label="Search logins">
+    <button id="btn-add" class="icon" title="Add login" aria-label="Add login"></button>
+    <button id="btn-lock" class="icon" title="Lock vault" aria-label="Lock vault"></button>
+    <button id="btn-settings" class="icon" title="Settings" aria-label="Settings"></button>
+  </header>
+
+  <div id="site-section" hidden>
+    <h2 id="site-heading">This site</h2>
+    <ul id="site-list" class="entries"></ul>
+  </div>
+
+  <h2 id="all-heading">All logins</h2>
+  <ul id="all-list" class="entries"></ul>
+
+  <p id="empty" class="lede" hidden>
+    No logins saved yet. Add one with <kbd>+</kbd>, or import your existing passwords from
+    <a href="#" id="link-options-empty">Settings</a>.
+  </p>
+  <p id="no-results" class="lede" hidden>No logins match that search.</p>
+
+  <footer class="hint">
+    <span><kbd id="kbd-fill">⌘⇧L</kbd> fill</span>
+    <span><kbd id="kbd-save">⌘⇧Y</kbd> save</span>
+  </footer>
+</section>
+
+<!-- ── Add / edit ────────────────────────────────────────────────────────── -->
+<section id="view-edit" class="view" hidden>
+  <header class="bar">
+    <button id="btn-back" class="icon" title="Back" aria-label="Back"></button>
+    <h1 id="edit-title">Add login</h1>
+  </header>
+
+  <form id="form-edit" novalidate>
+    <input type="hidden" id="edit-id">
+
+    <label for="edit-name">Name</label>
+    <input id="edit-name" type="text" placeholder="GitHub">
+
+    <label for="edit-url">Website</label>
+    <input id="edit-url" type="text" placeholder="https://github.com" required>
+
+    <label for="edit-user">Username or email</label>
+    <input id="edit-user" type="text" autocomplete="off">
+
+    <label for="edit-pass">Password</label>
+    <div class="row">
+      <input id="edit-pass" type="password" autocomplete="off" required>
+      <button type="button" id="btn-reveal" class="pill" title="Show password"
+              aria-label="Show password" aria-pressed="false">Show</button>
+      <button type="button" id="btn-generate" class="pill" title="Generate password"
+              aria-label="Generate password" aria-expanded="false">New</button>
+    </div>
+    <div id="edit-strength" class="strength" aria-live="polite"></div>
+
+    <div id="gen-panel" class="panel" hidden>
+      <div class="gen-row">
+        <label for="gen-length" class="inline">Length</label>
+        <input id="gen-length" type="range" min="8" max="64" step="1">
+        <output id="gen-length-out" for="gen-length"></output>
+      </div>
+      <label class="check"><input type="checkbox" id="gen-upper"> Uppercase</label>
+      <label class="check"><input type="checkbox" id="gen-digits"> Digits</label>
+      <label class="check"><input type="checkbox" id="gen-symbols"> Symbols</label>
+      <label class="check"><input type="checkbox" id="gen-ambiguous"> Allow lookalike characters</label>
+      <button type="button" id="btn-gen-apply" class="primary wide">Use this password</button>
+    </div>
+
+    <label for="edit-notes">Notes</label>
+    <textarea id="edit-notes" rows="2"></textarea>
+
+    <div class="row end">
+      <button type="button" id="btn-delete" class="danger" hidden>Delete</button>
+      <span class="spacer"></span>
+      <button type="submit" class="primary">Save</button>
+    </div>
+    <p id="edit-error" class="error" role="alert" hidden></p>
+  </form>
+</section>
+
+<div id="flash" class="flash" role="status" aria-live="polite" hidden></div>
+
+<script type="module" src="popup.js"></script>
+</body>
+</html>

@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Password Vault — Settings</title>
+  <link rel="stylesheet" href="options.css">
+</head>
+<body>
+<main>
+  <header class="masthead">
+    <h1>Password Vault</h1>
+    <span id="version" class="version"></span>
+  </header>
+
+  <section id="welcome" class="welcome" hidden>
+    <h2>Welcome</h2>
+    <ol class="steps">
+      <li>Open the extension and create a master password. It is the only way into your vault, and it cannot be recovered.</li>
+      <li>Bring your existing passwords across with <strong>Import</strong> below.</li>
+      <li>On a login page, press the fill shortcut — or just click into the username box and pick from the list.</li>
+    </ol>
+    <button id="btn-dismiss-welcome">Got it</button>
+  </section>
+
+  <section id="locked-notice" hidden>
+    <h2>Vault locked</h2>
+    <p class="lede">Unlock to change settings, import, or export.</p>
+    <form id="form-unlock" class="inline" novalidate>
+      <input id="unlock-pw" type="password" placeholder="Master password"
+             autocomplete="current-password" aria-label="Master password" required>
+      <button type="submit" class="primary">Unlock</button>
+    </form>
+    <p id="unlock-error" class="error" role="alert" hidden></p>
+  </section>
+
+  <section id="no-vault-notice" hidden>
+    <h2>No vault yet</h2>
+    <p class="lede">Open the extension to create your vault first.</p>
+  </section>
+
+  <div id="settings-body" hidden>
+
+    <section>
+      <h2>Filling</h2>
+      <label class="check">
+        <input type="checkbox" id="suggest">
+        Show saved logins when I click into a login box
+      </label>
+      <label class="check">
+        <input type="checkbox" id="autosave">
+        Offer to save a password when I submit a login form
+      </label>
+      <label class="check">
+        <input type="checkbox" id="autosubmit">
+        Submit the form automatically after filling
+      </label>
+      <p class="lede small">Automatic submission can misfire on multi-step sign-ins.</p>
+
+      <h3>Shortcuts</h3>
+      <table class="shortcuts"><tbody id="shortcut-rows"></tbody></table>
+      <button id="btn-shortcuts">Change shortcuts</button>
+    </section>
+
+    <section>
+      <h2>Locking</h2>
+      <label for="autolock">Lock after this much inactivity</label>
+      <select id="autolock">
+        <option value="1">1 minute</option>
+        <option value="5">5 minutes</option>
+        <option value="15">15 minutes</option>
+        <option value="30">30 minutes</option>
+        <option value="60">1 hour</option>
+        <option value="480">8 hours</option>
+      </select>
+
+      <label class="check">
+        <input type="checkbox" id="lockidle">
+        Also lock when I step away from the computer
+      </label>
+      <p class="lede small">The vault always locks when Chrome quits.</p>
+
+      <label for="clipboard">Clear copied passwords from the clipboard after</label>
+      <select id="clipboard">
+        <option value="0">Never</option>
+        <option value="15">15 seconds</option>
+        <option value="30">30 seconds</option>
+        <option value="60">1 minute</option>
+      </select>
+    </section>
+
+    <section>
+      <h2>Touch ID</h2>
+      <p class="lede">
+        Unlock with your fingerprint instead of typing your master password. Your master
+        password keeps working and stays the only way to recover the vault.
+      </p>
+      <p id="bio-state" class="result" role="status"></p>
+      <div class="row">
+        <button id="btn-bio-enroll">Turn on Touch ID</button>
+        <button id="btn-bio-disable" hidden>Turn off Touch ID</button>
+      </div>
+      <p id="bio-result" class="result" role="status" hidden></p>
+    </section>
+
+    <section>
+      <h2>Security check</h2>
+      <p class="lede">Looks for reused and weak passwords. Nothing leaves this computer.</p>
+      <button id="btn-audit">Run check</button>
+      <div id="audit-out" hidden>
+        <p id="audit-summary" class="result"></p>
+        <div id="audit-detail"></div>
+      </div>
+    </section>
+
+    <section>
+      <h2>Import</h2>
+      <p class="lede">
+        This extension cannot read Chrome's built-in password manager — the browser gives
+        extensions no access to it. Export your passwords from Chrome first
+        (<strong>Settings → Autofill and passwords → Google Password Manager → Settings →
+        Export passwords</strong>), then load the file here. Delete the file afterwards:
+        it is not encrypted.
+      </p>
+      <input type="file" id="csv-file" accept=".csv,text/csv" aria-label="Password CSV file">
+      <p id="csv-result" class="result" role="status" hidden></p>
+    </section>
+
+    <section>
+      <h2>Backup</h2>
+      <p class="lede">
+        A backup file is encrypted and is useless without your master password. Restoring
+        replaces everything currently in the vault.
+      </p>
+      <div class="row">
+        <button id="btn-export">Download backup</button>
+        <button id="btn-restore-pick">Restore from backup…</button>
+        <input type="file" id="restore-file" accept=".json,application/json" hidden>
+      </div>
+      <p id="backup-result" class="result" role="status" hidden></p>
+    </section>
+
+    <section>
+      <h2>Change master password</h2>
+      <p class="lede small">Changing it also turns off Touch ID, so enrol again afterwards.</p>
+      <form id="form-master" novalidate>
+        <label for="master-old">Current password</label>
+        <input id="master-old" type="password" autocomplete="current-password" required>
+        <label for="master-new">New password</label>
+        <input id="master-new" type="password" autocomplete="new-password" minlength="8" required>
+        <label for="master-new2">Confirm new password</label>
+        <input id="master-new2" type="password" autocomplete="new-password" minlength="8" required>
+        <button type="submit" class="primary">Change password</button>
+      </form>
+      <p id="master-result" class="result" role="status" hidden></p>
+    </section>
+
+    <section>
+      <h2>Sites you asked not to save</h2>
+      <ul id="never-list" class="never"></ul>
+      <p id="never-empty" class="lede">None yet.</p>
+    </section>
+
+    <section>
+      <h2>How your data is kept</h2>
+      <ul class="lede notes">
+        <li>Your vault is encrypted on this computer and is never sent anywhere.</li>
+        <li>Your master password is never stored. If you forget it the vault cannot be recovered, so keep a backup.</li>
+        <li>While the vault is unlocked, anyone using this computer can read your saved logins. Lock it when you step away.</li>
+      </ul>
+    </section>
+
+  </div>
+</main>
+<script type="module" src="options.js"></script>
+</body>
+</html>

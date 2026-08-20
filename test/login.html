@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Password Vault — fixtures</title>
+  <style>
+    body { font: 14px/1.5 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+           margin: 0; padding: 32px; background: #f8fafc; color: #0f172a; }
+    a { color: #2563eb; }
+    .back { display: inline-block; margin-bottom: 20px; font-size: 13px; }
+    h1 { font-size: 19px; margin: 0 0 6px; }
+    .note { color: #64748b; max-width: 62ch; margin: 0 0 22px; }
+    fieldset { border: 1px solid #e2e8f0; border-radius: 10px; background: #fff;
+               padding: 16px 18px; max-width: 380px; }
+    legend { font-weight: 600; padding: 0 6px; }
+    label { display: block; font-size: 12px; color: #64748b; margin: 10px 0 3px; }
+    input { width: 100%; padding: 8px 10px; border: 1px solid #cbd5e1; border-radius: 6px;
+            font: inherit; box-sizing: border-box; }
+    button { margin-top: 14px; padding: 8px 14px; border-radius: 6px; border: 1px solid #2563eb;
+             background: #2563eb; color: #fff; font: inherit; cursor: pointer; }
+    .state { margin-top: 12px; font: 12px/1.5 ui-monospace, Menlo, monospace;
+             background: #f1f5f9; border-radius: 6px; padding: 8px 10px; white-space: pre-wrap; }
+    code { background: #e2e8f0; padding: 1px 5px; border-radius: 4px; }
+    .proves { border-left: 3px solid #2563eb; padding: 2px 0 2px 12px; margin: 0 0 22px;
+              color: #475569; max-width: 62ch; }
+
+    ul.fixtures { list-style: none; padding: 0; max-width: 62ch; }
+    ul.fixtures li { border: 1px solid #e2e8f0; border-radius: 10px; background: #fff;
+                     padding: 14px 16px; margin-bottom: 10px; }
+    ul.fixtures a { font-weight: 600; font-size: 15px; text-decoration: none; }
+    ul.fixtures p { margin: 4px 0 0; color: #64748b; font-size: 13px; }
+  </style>
+</head>
+<body>
+<h1>Password Vault — browser fixtures</h1>
+<p class="note">
+  Save a login for <code>localhost</code> first (open a fixture, type credentials, press the
+  save shortcut). Then press the fill shortcut on each page below. Each fixture isolates one
+  thing that commonly breaks autofill.
+</p>
+<ul class="fixtures">
+  <li><a href="plain.html">1. Plain form</a>
+      <p>The baseline. A real form with autocomplete hints.</p></li>
+  <li><a href="react.html">2. React-style tracked inputs</a>
+      <p>Proves the fill goes through the native value setter, not a plain assignment.</p></li>
+  <li><a href="shadow.html">3. Open shadow root</a>
+      <p>Inputs inside a web component, invisible to a normal querySelectorAll.</p></li>
+  <li><a href="frame.html">4. Login inside an iframe</a>
+      <p>The picker and the fill must be routed to the child frame.</p></li>
+  <li><a href="multi.html">5. Three forms on one page</a>
+      <p>Fill and save must target the form your caret is in, not the first one found.</p></li>
+</ul>
+</body>
+</html>
