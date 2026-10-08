@@ -29,6 +29,7 @@
     TOAST: 'TOAST',
     PICK: 'PICK',
     SAVE_PROMPT: 'SAVE_PROMPT',
+    UNDO_PROMPT: 'UNDO_PROMPT',
     SUBMIT_DETECTED: 'SUBMIT_DETECTED',
     SUGGEST_REQUEST: 'SUGGEST_REQUEST',
     FILL_ENTRY: 'FILL_ENTRY',
@@ -570,13 +571,15 @@
 
   /* ------------------------------------------------------------ save prompt */
 
-  function savePrompt({ domain, username, isUpdate }) {
+  // A card with a message and a row of buttons (null marks the spacer). Resolves with the
+  // chosen action, or `fallback` on Escape or when nobody answers within `timeoutMs`.
+  function actionCard({ label, message, sub, buttons, fallback, timeoutMs, takeFocus }) {
     return new Promise((resolve) => {
       const wrap = makeWrap(false);
       const card = document.createElement('div');
       card.className = 'card';
       card.setAttribute('role', 'dialog');
-      card.setAttribute('aria-label', isUpdate ? 'Update saved password' : 'Save password');
+      card.setAttribute('aria-label', label);
 
       const row = document.createElement('div');
       row.className = 'row';
@@ -586,27 +589,16 @@
       mark.setAttribute('aria-hidden', 'true');
       const msg = document.createElement('div');
       msg.className = 'msg';
-      msg.textContent = isUpdate ? `Update password for ${domain}?` : `Save password for ${domain}?`;
-      const sub = document.createElement('div');
-      sub.className = 'sub';
-      sub.textContent = username || 'No username detected';
-      msg.appendChild(sub);
+      msg.textContent = message;
+      const subEl = document.createElement('div');
+      subEl.className = 'sub';
+      subEl.textContent = sub;
+      msg.appendChild(subEl);
       row.append(mark, msg);
       card.appendChild(row);
 
       const actions = document.createElement('div');
       actions.className = 'actions';
-      const save = document.createElement('button');
-      save.className = 'primary';
-      save.textContent = isUpdate ? 'Update' : 'Save';
-      const later = document.createElement('button');
-      later.textContent = 'Not now';
-      const spacer = document.createElement('div');
-      spacer.className = 'spacer';
-      const never = document.createElement('button');
-      never.className = 'ghost';
-      never.textContent = 'Never here';
-      actions.append(save, later, spacer, never);
       card.appendChild(actions);
       wrap.appendChild(card);
 
@@ -618,17 +610,63 @@
         resolve({ action });
       };
       const onKey = (e) => {
-        if (e.key === 'Escape') { e.preventDefault(); finish('dismiss'); }
+        if (e.key === 'Escape') { e.preventDefault(); finish(fallback); }
       };
 
-      save.addEventListener('click', () => finish('save'));
-      later.addEventListener('click', () => finish('dismiss'));
-      never.addEventListener('click', () => finish('never'));
+      for (const spec of buttons) {
+        if (!spec) {
+          const spacer = document.createElement('div');
+          spacer.className = 'spacer';
+          actions.appendChild(spacer);
+          continue;
+        }
+        const button = document.createElement('button');
+        if (spec.className) button.className = spec.className;
+        button.textContent = spec.text;
+        button.addEventListener('click', () => finish(spec.action));
+        actions.appendChild(button);
+      }
+
       document.addEventListener('keydown', onKey, true);
-      save.focus();
+      if (takeFocus) actions.querySelector('button').focus();
 
       // Never leave a prompt sitting on the page indefinitely.
-      timer = setTimeout(() => finish('dismiss'), 30000);
+      timer = setTimeout(() => finish(fallback), timeoutMs);
+    });
+  }
+
+  function savePrompt({ domain, username, isUpdate }) {
+    return actionCard({
+      label: isUpdate ? 'Update saved password' : 'Save password',
+      message: isUpdate ? `Update password for ${domain}?` : `Save password for ${domain}?`,
+      sub: username || 'No username detected',
+      buttons: [
+        { action: 'save', text: isUpdate ? 'Update' : 'Save', className: 'primary' },
+        { action: 'dismiss', text: 'Not now' },
+        null,
+        { action: 'never', text: 'Never here', className: 'ghost' },
+      ],
+      fallback: 'dismiss',
+      timeoutMs: 30000,
+      takeFocus: true,
+    });
+  }
+
+  // Shown after an automatic save. It never takes focus: the page has just signed in, and a
+  // stray Enter must not undo the save.
+  function undoPrompt({ domain, username, isUpdate }) {
+    return actionCard({
+      label: isUpdate ? 'Password updated' : 'Password saved',
+      message: isUpdate ? `Password updated for ${domain}` : `Password saved for ${domain}`,
+      sub: username || 'No username detected',
+      buttons: [
+        { action: 'undo', text: 'Undo', className: 'primary' },
+        null,
+        { action: 'keep', text: 'OK', className: 'ghost' },
+      ],
+      fallback: 'keep',
+      timeoutMs: 10000,
+      takeFocus: false,
     });
   }
 
@@ -759,6 +797,10 @@
 
       case MSG.SAVE_PROMPT:
         savePrompt(msg).then(sendResponse);
+        return true;
+
+      case MSG.UNDO_PROMPT:
+        undoPrompt(msg).then(sendResponse);
         return true;
 
       default:

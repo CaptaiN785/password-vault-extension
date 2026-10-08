@@ -43,6 +43,8 @@ async function init() {
   $('autolock').value = String(settings.autoLockMinutes);
   $('clipboard').value = String(settings.clipboardClearSeconds);
   $('autosave').checked = settings.autoSavePrompt;
+  $('autosave-silent').checked = settings.autoSaveSilently;
+  $('autosave-silent').disabled = !settings.autoSavePrompt;
   $('suggest').checked = settings.suggestOnFocus;
   $('autosubmit').checked = settings.autoSubmit;
   $('lockidle').checked = settings.lockOnSystemIdle;
@@ -355,6 +357,12 @@ function bindSetting(id, key, read) {
 bindSetting('autolock', 'autoLockMinutes', (el) => Number(el.value));
 bindSetting('clipboard', 'clipboardClearSeconds', (el) => Number(el.value));
 bindSetting('autosave', 'autoSavePrompt', (el) => el.checked);
+bindSetting('autosave-silent', 'autoSaveSilently', (el) => el.checked);
+
+// Saving silently is a mode of the save offer, so it means nothing while that is off.
+$('autosave').addEventListener('change', (e) => {
+  $('autosave-silent').disabled = !e.target.checked;
+});
 bindSetting('suggest', 'suggestOnFocus', (el) => el.checked);
 bindSetting('autosubmit', 'autoSubmit', (el) => el.checked);
 bindSetting('lockidle', 'lockOnSystemIdle', (el) => el.checked);

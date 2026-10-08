@@ -280,6 +280,47 @@ await check('the audit finds reuse and weakness, and returns no passwords', asyn
   assert.ok(!JSON.stringify(audit).includes('SharedPassw0rd'), 'audit must not carry passwords');
 });
 
+console.log('undo an automatic save');
+await check('undoing a new save removes the entry', async () => {
+  const before = (await V.readEntries()).length;
+  const saved = await V.upsertEntry({ url: 'https://undo-new.test', username: 'u', password: 'p1' });
+  assert.equal(await V.revertSave(saved, undefined), true);
+  const entries = await V.readEntries();
+  assert.equal(entries.length, before);
+  assert.ok(!entries.some((e) => e.id === saved.id));
+});
+
+await check('undoing an update restores the previous password', async () => {
+  const original = await V.upsertEntry({ url: 'https://undo-upd.test', username: 'u', password: 'old' });
+  const previous = await V.findByDomainAndUser('undo-upd.test', 'u');
+  await new Promise((r) => setTimeout(r, 2));
+  const saved = await V.upsertEntry({ id: original.id, url: 'https://undo-upd.test', username: 'u', password: 'new' });
+  assert.equal(await V.revertSave(saved, previous), true);
+  const after = await V.findByDomainAndUser('undo-upd.test', 'u');
+  assert.deepEqual(after, previous);
+});
+
+await check('undo leaves an entry alone once it has been edited since', async () => {
+  const saved = await V.upsertEntry({ url: 'https://undo-edit.test', username: 'u', password: 'auto' });
+  await new Promise((r) => setTimeout(r, 2));
+  await V.upsertEntry({ ...saved, password: 'edited-by-hand' });
+  assert.equal(await V.revertSave(saved, undefined), false);
+  const after = await V.findByDomainAndUser('undo-edit.test', 'u');
+  assert.equal(after.password, 'edited-by-hand');
+});
+
+await check('undo of an entry already deleted is a no-op', async () => {
+  const saved = await V.upsertEntry({ url: 'https://undo-gone.test', username: 'u', password: 'p' });
+  await V.deleteEntry(saved.id);
+  const before = (await V.readEntries()).length;
+  assert.equal(await V.revertSave(saved, undefined), false);
+  assert.equal((await V.readEntries()).length, before);
+});
+
+await check('automatic saving is off unless chosen', async () => {
+  assert.equal(V.DEFAULT_SETTINGS.autoSaveSilently, false);
+});
+
 console.log('settings');
 await check('nested generator defaults survive a partial patch', async () => {
   await V.setSettings({ generator: { length: 32 } });

@@ -25,6 +25,7 @@ export const DEFAULT_SETTINGS = {
   clipboardClearSeconds: 30,
   neverSave: [],
   autoSavePrompt: true,
+  autoSaveSilently: false,
   suggestOnFocus: true,
   autoSubmit: false,
   generator: { length: 20, upper: true, digits: true, symbols: true, ambiguous: false },
@@ -342,6 +343,20 @@ export function deleteEntry(id) {
   return mutate((entries) => {
     const i = entries.findIndex((e) => e.id === id);
     if (i >= 0) entries.splice(i, 1);
+  });
+}
+
+// Undo for an automatic save: put back what was there before, unless the entry has been
+// edited since -- reverting then would throw away a newer change.
+export function revertSave(saved, previous) {
+  return mutate((entries) => {
+    const i = entries.findIndex((e) => e.id === saved.id);
+    if (i < 0 || entries[i].updatedAt !== saved.updatedAt) return false;
+
+    if (previous) entries[i] = previous;
+    else entries.splice(i, 1);
+
+    return true;
   });
 }
 

@@ -57,6 +57,8 @@ code {
 label { display: block; font-size: 13px; color: var(--muted); margin: 14px 0 4px; }
 label.check { display: flex; align-items: center; gap: 8px; color: var(--fg); }
 label.check input { width: auto; margin: 0; }
+label.check.nested { padding-left: 24px; }
+label.check:has(input:disabled) { opacity: 0.5; }
 
 input[type=password], input[type=text], select, input[type=file] {
   width: 100%;

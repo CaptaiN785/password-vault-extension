@@ -365,32 +365,82 @@ async function handleSubmission(msg, sender) {
   if (last && last.sig === sig && Date.now() - last.at < 10000) return;
   await chrome.storage.session.set({ [S_LAST_PROMPT]: { sig, at: Date.now() } });
 
+  const entry = {
+    id: existing ? existing.id : undefined,
+    title: existing ? existing.title : (msg.title || domain),
+    url,
+    username: msg.username,
+    password: msg.password,
+    notes: existing ? existing.notes : '',
+  };
+
   promptOpen = true;
   try {
-    const answer = await sendToFrame(sender.tab.id, 0, {
-      type: M.SAVE_PROMPT,
-      domain,
-      username: msg.username,
-      isUpdate: !!existing,
-    });
-
-    if (!answer) return;
-    if (answer.action === 'never') {
-      await V.setSettings({ neverSave: [...settings.neverSave, domain] });
-    } else if (answer.action === 'save') {
-      await V.upsertEntry({
-        id: existing ? existing.id : undefined,
-        title: existing ? existing.title : (msg.title || domain),
-        url,
-        username: msg.username,
-        password: msg.password,
-        notes: existing ? existing.notes : '',
-      });
-      await toast(sender.tab.id, existing ? 'Password updated' : 'Password saved', domain, 'ok');
-    }
+    if (settings.autoSaveSilently) await saveWithUndo(sender.tab.id, entry, domain, existing);
+    else await askToSave(sender.tab.id, entry, domain, existing, settings.neverSave);
   } finally {
     promptOpen = false;
   }
+}
+
+async function askToSave(tabId, entry, domain, existing, neverSave) {
+  const answer = await sendToFrame(tabId, 0, {
+    type: M.SAVE_PROMPT,
+    domain,
+    username: entry.username,
+    isUpdate: !!existing,
+  });
+
+  if (!answer) return;
+  if (answer.action === 'never') {
+    await V.setSettings({ neverSave: [...neverSave, domain] });
+  } else if (answer.action === 'save') {
+    await V.upsertEntry(entry);
+    await toast(tabId, existing ? 'Password updated' : 'Password saved', domain, 'ok');
+  }
+}
+
+// Saving first and offering Undo after means a page that navigates away, or a tab that
+// closes, still keeps the password -- the safe side is the saved one.
+async function saveWithUndo(tabId, entry, domain, existing) {
+  const saved = await V.upsertEntry(entry);
+  const answer = await sendWhenReady(tabId, {
+    type: M.UNDO_PROMPT,
+    domain,
+    username: entry.username,
+    isUpdate: !!existing,
+  });
+
+  if (!answer) {
+    await flashBadge('✓', '#2563eb');
+    return;
+  }
+  if (answer.action !== 'undo') return;
+
+  let reverted = false;
+  try {
+    reverted = await V.revertSave(saved, existing);
+  } catch {
+    await toast(tabId, 'Not undone', 'Unlock the vault and remove it from the popup.', 'warn');
+    return;
+  }
+
+  if (reverted) await toast(tabId, existing ? 'Update undone' : 'Save undone', domain, 'ok');
+  else await toast(tabId, 'Not undone', 'The login was changed after it was saved.', 'warn');
+}
+
+// A sign-in usually navigates, so the page that submitted is often gone before the prompt
+// arrives; retry briefly until the next page's content script answers.
+const READY_ATTEMPTS = 6;
+const READY_DELAY_MS = 500;
+
+async function sendWhenReady(tabId, message) {
+  for (let attempt = 0; attempt < READY_ATTEMPTS; attempt++) {
+    const response = await sendToFrame(tabId, 0, message);
+    if (response) return response;
+    await new Promise((resolve) => setTimeout(resolve, READY_DELAY_MS));
+  }
+  return null;
 }
 
 /* ---------------------------------------------------------------- clipboard */

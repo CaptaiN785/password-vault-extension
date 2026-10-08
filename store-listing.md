@@ -35,6 +35,7 @@ FILLING
 SAVING
 • Sign in as usual and accept the "Save password?" prompt, or press Cmd+Shift+Y at any time.
 • "Never here" stops the prompt for a site you do not want saved.
+• Or let it save straight away on sign-in, with an Undo if you did not want it.
 
 SECURITY
 • Your vault is encrypted with AES-GCM-256. The key is derived from your master password

@@ -47,6 +47,8 @@ Chrome silently drops a suggested shortcut another extension already claimed; Se
   Escape). The caret lands in the password box so Enter submits.
 - **Save** — sign in as usual and accept the *Save password?* prompt, or press the save
   shortcut at any time. **Never here** stops the prompt for that site.
+  Prefer no prompt? Settings → *Save it straight away instead of asking*: the login is
+  saved on submit and a card offers **Undo** for 10 seconds.
 - **Manage** — the popup lists logins for the current site first. Search matches names,
   sites, usernames and notes; Enter fills the top result.
 - **Touch ID** — Settings → Touch ID. Unlock with a fingerprint instead of typing your
@@ -120,7 +122,7 @@ email, work SSO — use a dedicated password manager.
 Logic tests run under Node against a `chrome.storage` shim, no browser needed:
 
 ```sh
-npm test          # 26 checks: encryption, locking, matching, concurrency, audit
+npm test          # 31 checks: encryption, locking, matching, concurrency, audit, undo
 npm run check     # syntax-check every source file
 ```
 

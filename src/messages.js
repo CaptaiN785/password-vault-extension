@@ -9,6 +9,7 @@ export const CAPTURE = 'CAPTURE';
 export const TOAST = 'TOAST';
 export const PICK = 'PICK';
 export const SAVE_PROMPT = 'SAVE_PROMPT';
+export const UNDO_PROMPT = 'UNDO_PROMPT';
 
 // background <- content script
 export const SUBMIT_DETECTED = 'SUBMIT_DETECTED';
