@@ -1,6 +1,6 @@
 {
   "name": "password-vault",
-  "version": "2.0.0",
+  "version": "2.1.0",
   "private": true,
   "description": "Chrome extension: a local, encrypted password vault with shortcut autofill and Touch ID unlock.",
   "type": "module",
